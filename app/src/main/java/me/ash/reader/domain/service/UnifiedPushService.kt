@@ -70,8 +70,12 @@ class UnifiedPushService @Inject constructor(
         }
     }
 
-    suspend fun updateLastPushTime(endpoint: String) {
-        val push = pushNotificationDao.queryByEndpoint(endpoint)
+    suspend fun updateLastPushTime(instance: String) {
+        val parts = instance.split("_")
+        if (parts.size != 3 || parts[0] != "readyou") return
+
+        val feedId = parts[2]
+        val push = pushNotificationDao.queryByFeedId(feedId)
         if (push != null) {
             push.lastPushAt = Date()
             pushNotificationDao.update(push)
