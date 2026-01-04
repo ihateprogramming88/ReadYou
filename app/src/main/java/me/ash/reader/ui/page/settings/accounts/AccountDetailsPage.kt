@@ -230,6 +230,41 @@ fun AccountDetailsPage(
                 item {
                     Subtitle(
                         modifier = Modifier.padding(horizontal = 24.dp),
+                        text = stringResource(R.string.unified_push),
+                    )
+                    SettingItem(
+                        title = stringResource(R.string.enable_unified_push),
+                        desc = stringResource(R.string.enable_unified_push_desc),
+                        onClick = {
+                            selectedAccount?.id?.let {
+                                (!selectedAccount.unifiedPushEnabled).put(it, viewModel)
+                                if (selectedAccount.unifiedPushEnabled.value) {
+                                    viewModel.unregisterUnifiedPush(it)
+                                } else {
+                                    viewModel.registerUnifiedPush(it)
+                                }
+                            }
+                        },
+                    ) {
+                        RYSwitch(activated = selectedAccount?.unifiedPushEnabled?.value == true) {
+                            selectedAccount?.id?.let {
+                                (!selectedAccount.unifiedPushEnabled).put(it, viewModel)
+                                if (selectedAccount.unifiedPushEnabled.value) {
+                                    viewModel.unregisterUnifiedPush(it)
+                                } else {
+                                    viewModel.registerUnifiedPush(it)
+                                }
+                            }
+                        }
+                    }
+                    if (selectedAccount?.unifiedPushEnabled?.value == true) {
+                        Tips(text = stringResource(R.string.unified_push_tips))
+                    }
+                    Spacer(modifier = Modifier.height(24.dp))
+                }
+                item {
+                    Subtitle(
+                        modifier = Modifier.padding(horizontal = 24.dp),
                         text = stringResource(R.string.advanced),
                     )
                     SettingItem(
