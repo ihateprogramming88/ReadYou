@@ -126,6 +126,25 @@ abstract class AbstractRssRepository(
             ListenableWorker.Result.success()
         }
 
+    open suspend fun syncFeedSelective(feedId: String?): ListenableWorker.Result {
+        if (feedId == null) return ListenableWorker.Result.failure()
+
+        return supervisorScope {
+            val feed = feedDao.queryById(feedId) ?: return@supervisorScope ListenableWorker.Result.failure()
+            val preDate = Date()
+
+            val feedWithArticle = syncFeed(feed, preDate)
+            val newArticles = articleDao.insertListIfNotExist(feedWithArticle.articles)
+
+            if (feedWithArticle.feed.isNotification) {
+                notificationHelper.notify(feedWithArticle.copy(articles = newArticles))
+            }
+
+            Log.i("RlOG", "Selective sync completed for feed: ${feed.name}")
+            ListenableWorker.Result.success()
+        }
+    }
+
     open suspend fun markAsRead(
         groupId: String?,
         feedId: String?,
