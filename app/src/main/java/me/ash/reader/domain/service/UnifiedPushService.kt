@@ -22,13 +22,21 @@ class UnifiedPushService @Inject constructor(
 ) {
 
     suspend fun registerForPush(accountId: Int) {
-        val account = accountDao.queryById(accountId) ?: return
-        if (!account.unifiedPushEnabled.value) return
+        val distributor = UnifiedPush.getDistributor(context)
+        Log.i("UnifiedPush", "Registering for push notifications. Distributor: ${distributor ?: "NONE INSTALLED"}")
+
+        if (distributor.isNullOrEmpty()) {
+            Log.e("UnifiedPush", "No UnifiedPush distributor found! Please install ntfy or another distributor.")
+            return
+        }
 
         val feeds = feedDao.queryAll(accountId)
+        Log.i("UnifiedPush", "Registering ${feeds.size} feeds for account $accountId")
+
         feeds.forEach { feed ->
             val instance = "readyou_${accountId}_${feed.id}"
             UnifiedPush.registerApp(context, instance)
+            Log.i("UnifiedPush", "Registered instance: $instance")
         }
     }
 
