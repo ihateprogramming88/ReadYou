@@ -112,6 +112,10 @@ class AccountViewModel @Inject constructor(
         }
     }
 
+    fun getUnifiedPushDistributor(): String {
+        return unifiedPushService.getDistributorName()
+    }
+
     fun addAccount(account: Account, callback: (account: Account?, exception: Exception?) -> Unit) {
         setLoading(true)
         addAccountJob = applicationScope.launch(ioDispatcher) {

@@ -393,6 +393,7 @@
     <string name="enable_unified_push">Enable UnifiedPush</string>
     <string name="enable_unified_push_desc">Reduce battery usage with push notifications</string>
     <string name="unified_push_tips">Requires ntfy app or compatible UnifiedPush distributor. When enabled, feeds will update instantly via push notifications instead of periodic syncing, significantly reducing battery drain.</string>
+    <string name="unified_push_distributor">Distributor: %s</string>
     <string name="keep_archived_tips">Archived items are articles which are marked as read, not starred and not tagged. The \"Keep archived articles\" setting is only effective on this devices. Older archived articles will be deleted from this devices. The deletion of articles can\'t be undone.</string>
     <string name="switch_account">Switch</string>
     <string name="add">Add</string>

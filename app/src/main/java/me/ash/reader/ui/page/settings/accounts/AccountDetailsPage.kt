@@ -260,6 +260,8 @@ fun AccountDetailsPage(
                     if (selectedAccount?.unifiedPushEnabled?.value == true) {
                         Tips(text = stringResource(R.string.unified_push_tips))
                     }
+                    val distributorName = viewModel.getUnifiedPushDistributor()
+                    Tips(text = stringResource(R.string.unified_push_distributor, distributorName))
                     Spacer(modifier = Modifier.height(24.dp))
                 }
                 item {

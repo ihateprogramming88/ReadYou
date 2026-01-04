@@ -90,4 +90,15 @@ class UnifiedPushService @Inject constructor(
             pushNotificationDao.update(push)
         }
     }
+
+    fun getDistributorName(): String {
+        val distributor = UnifiedPush.getDistributor(context)
+        return when {
+            distributor.isNullOrEmpty() -> "Not installed"
+            distributor.contains("ntfy") -> "ntfy"
+            distributor.contains("nextpush") -> "NextPush"
+            distributor.contains("fcm") -> "FCM"
+            else -> distributor.substringAfterLast(".")
+        }
+    }
 }
