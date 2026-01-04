@@ -170,6 +170,9 @@ dependencies {
     implementation(libs.activity.compose)
     implementation(libs.appcompat)
 
+    // UnifiedPush
+    implementation(libs.unifiedpush.connector)
+
     // Testing
     testImplementation(libs.junit)
     androidTestImplementation(libs.junit.ext)

@@ -9,20 +9,19 @@ import me.ash.reader.domain.model.account.security.DESUtils
 import me.ash.reader.domain.model.article.Article
 import me.ash.reader.domain.model.feed.Feed
 import me.ash.reader.domain.model.group.Group
+import me.ash.reader.domain.model.push.PushNotification
 import me.ash.reader.domain.repository.AccountDao
 import me.ash.reader.domain.repository.ArticleDao
 import me.ash.reader.domain.repository.FeedDao
 import me.ash.reader.domain.repository.GroupDao
+import me.ash.reader.domain.repository.PushNotificationDao
 import me.ash.reader.infrastructure.preference.*
 import me.ash.reader.ui.ext.toInt
 import java.util.*
 
 @Database(
-    entities = [Account::class, Feed::class, Article::class, Group::class],
-    version = 6,
-    autoMigrations = [
-        AutoMigration(from = 5, to = 6)
-    ]
+    entities = [Account::class, Feed::class, Article::class, Group::class, PushNotification::class],
+    version = 7
 )
 @TypeConverters(
     AndroidDatabase.DateConverters::class,
@@ -33,6 +32,7 @@ import java.util.*
     SyncOnlyWhenChargingConverters::class,
     KeepArchivedConverters::class,
     SyncBlockListConverters::class,
+    UnifiedPushEnabledConverters::class,
 )
 abstract class AndroidDatabase : RoomDatabase() {
 
@@ -40,6 +40,7 @@ abstract class AndroidDatabase : RoomDatabase() {
     abstract fun feedDao(): FeedDao
     abstract fun articleDao(): ArticleDao
     abstract fun groupDao(): GroupDao
+    abstract fun pushNotificationDao(): PushNotificationDao
 
     companion object {
 
@@ -77,6 +78,8 @@ val allMigrations = arrayOf(
     MIGRATION_2_3,
     MIGRATION_3_4,
     MIGRATION_4_5,
+    MIGRATION_5_6,
+    MIGRATION_6_7,
 )
 
 @Suppress("ClassName")
@@ -152,6 +155,48 @@ object MIGRATION_4_5 : Migration(4, 5) {
         database.execSQL(
             """
             ALTER TABLE account ADD COLUMN lastArticleId TEXT DEFAULT NULL
+            """.trimIndent()
+        )
+    }
+}
+
+@Suppress("ClassName")
+object MIGRATION_5_6 : Migration(5, 6) {
+
+    override fun migrate(database: SupportSQLiteDatabase) {
+    }
+}
+
+@Suppress("ClassName")
+object MIGRATION_6_7 : Migration(6, 7) {
+
+    override fun migrate(database: SupportSQLiteDatabase) {
+        database.execSQL(
+            """
+            CREATE TABLE IF NOT EXISTS push_notification (
+                id TEXT PRIMARY KEY NOT NULL,
+                accountId INTEGER NOT NULL,
+                feedId TEXT,
+                endpoint TEXT NOT NULL,
+                registeredAt INTEGER NOT NULL,
+                lastPushAt INTEGER
+            )
+            """.trimIndent()
+        )
+        database.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_push_notification_accountId ON push_notification(accountId)"
+        )
+        database.execSQL(
+            "CREATE INDEX IF NOT EXISTS index_push_notification_feedId ON push_notification(feedId)"
+        )
+        database.execSQL(
+            """
+            ALTER TABLE account ADD COLUMN unifiedPushEnabled INTEGER NOT NULL DEFAULT 0
+            """.trimIndent()
+        )
+        database.execSQL(
+            """
+            ALTER TABLE account ADD COLUMN ntfyServerUrl TEXT DEFAULT 'https://ntfy.sh'
             """.trimIndent()
         )
     }

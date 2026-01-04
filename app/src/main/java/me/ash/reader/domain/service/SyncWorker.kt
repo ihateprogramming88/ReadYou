@@ -11,6 +11,7 @@ import kotlinx.coroutines.withContext
 import me.ash.reader.infrastructure.preference.SyncIntervalPreference
 import me.ash.reader.infrastructure.preference.SyncOnlyOnWiFiPreference
 import me.ash.reader.infrastructure.preference.SyncOnlyWhenChargingPreference
+import me.ash.reader.ui.ext.currentAccountId
 import java.util.*
 import java.util.concurrent.TimeUnit
 
@@ -25,6 +26,11 @@ class SyncWorker @AssistedInject constructor(
     override suspend fun doWork(): Result =
         withContext(Dispatchers.Default) {
             Log.i("RLog", "doWork: ")
+            val account = accountService.getAccountById(applicationContext.currentAccountId).value
+            if (account?.unifiedPushEnabled?.value == true) {
+                Log.i("RLog", "UnifiedPush enabled, skipping periodic sync")
+                return@withContext Result.success()
+            }
             rssService.get().sync(this@SyncWorker).also {
                 rssService.get().clearKeepArchivedArticles()
             }
