@@ -8,6 +8,7 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedInject
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import me.ash.reader.domain.repository.AccountDao
 import me.ash.reader.infrastructure.preference.SyncIntervalPreference
 import me.ash.reader.infrastructure.preference.SyncOnlyOnWiFiPreference
 import me.ash.reader.infrastructure.preference.SyncOnlyWhenChargingPreference
@@ -19,14 +20,14 @@ import java.util.concurrent.TimeUnit
 class SyncWorker @AssistedInject constructor(
     @Assisted context: Context,
     @Assisted workerParams: WorkerParameters,
-    private val accountService: AccountService,
+    private val accountDao: AccountDao,
     private val rssService: RssService,
 ) : CoroutineWorker(context, workerParams) {
 
     override suspend fun doWork(): Result =
         withContext(Dispatchers.Default) {
             Log.i("RLog", "doWork: ")
-            val account = accountService.getAccountById(applicationContext.currentAccountId).value
+            val account = accountDao.queryById(applicationContext.currentAccountId)
             if (account?.unifiedPushEnabled?.value == true) {
                 Log.i("RLog", "UnifiedPush enabled, skipping periodic sync")
                 return@withContext Result.success()
