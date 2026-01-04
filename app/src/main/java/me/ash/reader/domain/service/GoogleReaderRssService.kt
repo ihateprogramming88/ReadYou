@@ -428,37 +428,50 @@ class GoogleReaderRssService @Inject constructor(
         preDate: Date,
     ) {
         itemIds.chunked(100).forEach { chunkedIds ->
-            articleDao.insert(
-                *googleReaderAPI.getItemsContents(chunkedIds).items?.map {
-                    val articleId = it.id?.ofItemStreamIdToId()
-                    requireNotNull(articleId) {
-                        "articleId is null"
-                    }
-                    Article(
-                        id = accountId.spacerDollar(articleId),
-                        date = it.published
-                            ?.run { Date(this * 1000) }
-                            ?.takeIf { !it.isFuture(preDate) }
-                            ?: preDate,
-                        title = it.title.decodeHTML() ?: context.getString(R.string.empty),
-                        author = it.author,
-                        rawDescription = it.summary?.content ?: "",
-                        shortDescription = Readability
-                            .parseToText(it.summary?.content, findArticleURL(it)).take(110),
-                        fullContent = it.summary?.content ?: "",
-                        img = rssHelper.findThumbnail(it.summary?.content),
-                        link = findArticleURL(it),
-                        feedId = accountId.spacerDollar(
-                            it.origin?.streamId?.ofFeedStreamIdToId()
-                                ?: feedIds.first()
-                        ),
-                        accountId = accountId,
-                        isUnread = unreadIds.contains(articleId),
-                        isStarred = starredIds.contains(articleId),
-                        updateAt = it.crawlTimeMsec?.run { Date(this.toLong()) } ?: preDate,
+            val articles = googleReaderAPI.getItemsContents(chunkedIds).items?.map {
+                val articleId = it.id?.ofItemStreamIdToId()
+                requireNotNull(articleId) {
+                    "articleId is null"
+                }
+                Article(
+                    id = accountId.spacerDollar(articleId),
+                    date = it.published
+                        ?.run { Date(this * 1000) }
+                        ?.takeIf { !it.isFuture(preDate) }
+                        ?: preDate,
+                    title = it.title.decodeHTML() ?: context.getString(R.string.empty),
+                    author = it.author,
+                    rawDescription = it.summary?.content ?: "",
+                    shortDescription = Readability
+                        .parseToText(it.summary?.content, findArticleURL(it)).take(110),
+                    fullContent = it.summary?.content ?: "",
+                    img = rssHelper.findThumbnail(it.summary?.content),
+                    link = findArticleURL(it),
+                    feedId = accountId.spacerDollar(
+                        it.origin?.streamId?.ofFeedStreamIdToId()
+                            ?: feedIds.first()
+                    ),
+                    accountId = accountId,
+                    isUnread = unreadIds.contains(articleId),
+                    isStarred = starredIds.contains(articleId),
+                    updateAt = it.crawlTimeMsec?.run { Date(this.toLong()) } ?: preDate,
+                )
+            }?.toTypedArray() ?: emptyArray()
+
+            articleDao.insert(*articles)
+
+            // Show notifications for new articles
+            articles.groupBy { it.feedId }.forEach { (feedId, feedArticles) ->
+                val feed = feedDao.queryById(feedId)
+                if (feed?.isNotification == true && feedArticles.isNotEmpty()) {
+                    notificationHelper.notify(
+                        me.ash.reader.domain.model.feed.FeedWithArticle(
+                            feed = feed,
+                            articles = feedArticles
+                        )
                     )
-                }?.toTypedArray() ?: emptyArray()
-            )
+                }
+            }
         }
     }
 
