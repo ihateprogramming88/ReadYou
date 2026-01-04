@@ -21,6 +21,9 @@ class UnifiedPushReceiver : MessagingReceiver() {
     @Inject
     lateinit var unifiedPushService: UnifiedPushService
 
+    @Inject
+    lateinit var rssService: RssService
+
     private val scope = CoroutineScope(Dispatchers.IO)
 
     override fun onMessage(context: Context, message: ByteArray, instance: String) {
@@ -30,7 +33,7 @@ class UnifiedPushReceiver : MessagingReceiver() {
             if (parts.size == 3 && parts[0] == "readyou") {
                 val feedId = parts[2]
                 unifiedPushService.updateLastPushTime(instance)
-                RssService.get().syncFeedSelective(feedId)
+                rssService.get().syncFeedSelective(feedId)
             }
         }
     }
