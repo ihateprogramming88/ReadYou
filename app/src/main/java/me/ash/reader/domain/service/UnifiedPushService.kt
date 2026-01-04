@@ -2,6 +2,7 @@ package me.ash.reader.domain.service
 
 import android.content.Context
 import android.util.Log
+import dagger.hilt.android.qualifiers.ApplicationContext
 import me.ash.reader.domain.model.push.PushNotification
 import me.ash.reader.domain.repository.AccountDao
 import me.ash.reader.domain.repository.FeedDao
@@ -14,7 +15,7 @@ import javax.inject.Singleton
 
 @Singleton
 class UnifiedPushService @Inject constructor(
-    private val context: Context,
+    @ApplicationContext private val context: Context,
     private val accountDao: AccountDao,
     private val feedDao: FeedDao,
     private val pushNotificationDao: PushNotificationDao,
