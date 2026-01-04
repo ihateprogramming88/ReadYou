@@ -37,4 +37,8 @@ data class Account(
     var syncBlockList: SyncBlockList = SyncBlockListPreference.default,
     @ColumnInfo(defaultValue = DESUtils.empty)
     var securityKey: String? = DESUtils.empty,
+    @ColumnInfo(defaultValue = "0")
+    var unifiedPushEnabled: UnifiedPushEnabledPreference = UnifiedPushEnabledPreference.default,
+    @ColumnInfo(defaultValue = "https://ntfy.sh")
+    var ntfyServerUrl: String? = "https://ntfy.sh",
 )
