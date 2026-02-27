@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="loading">Loading\u2026</string>
+    <string name="error_generic">An error occurred</string>
+    <string name="ok">OK</string>
+    <string name="cancel">Cancel</string>
+</resources>
